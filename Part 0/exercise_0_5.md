@@ -8,8 +8,5 @@ sequenceDiagram
     server-->>browser: Response "note created"
     deactivate server
     Note right of browser: The browser does not receive a redirect response 
-
-    
-
-    Note right of browser: The browser executes the callback function that renders the notes
+    Note right of browser: Instead, browser updates the UI directly thanks to the JavaScript code fetched earlier
 ```
