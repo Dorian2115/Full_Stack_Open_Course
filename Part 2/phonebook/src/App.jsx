@@ -1,14 +1,21 @@
-import { useState } from 'react'
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 const Filter = ({ filter, handleFilter }) => {
   return (
     <div>
       filter shown with <input value={filter} onChange={handleFilter} />
     </div>
-  )
-}
+  );
+};
 
-const PersonForm = ({ newName, handleNewName, newNumber, handleNewNumber, addPerson }) => {
+const PersonForm = ({
+  newName,
+  handleNewName,
+  newNumber,
+  handleNewNumber,
+  addPerson,
+}) => {
   return (
     <form>
       <h2>Add a new</h2>
@@ -26,11 +33,13 @@ const PersonForm = ({ newName, handleNewName, newNumber, handleNewNumber, addPer
       </div>
     </form>
   );
-}
+};
 
 const Persons = ({ persons, filter }) => {
-  if (filter !== '') {
-    persons = persons.filter(person => person.name.toLowerCase().includes(filter.toLowerCase()));
+  if (filter !== "") {
+    persons = persons.filter((person) =>
+      person.name.toLowerCase().includes(filter.toLowerCase())
+    );
   }
 
   return (
@@ -42,53 +51,57 @@ const Persons = ({ persons, filter }) => {
       ))}
     </ul>
   );
-}
-
+};
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ])
-  const [newName, setNewName] = useState('')
-  const [newNumber, setNewNumber] = useState('')
-  const [filter, setFilter] = useState('')
+  const [persons, setPersons] = useState([]);
+  const [newName, setNewName] = useState("");
+  const [newNumber, setNewNumber] = useState("");
+  const [filter, setFilter] = useState("");
+
+  useEffect(() => {
+    axios.get("http://localhost:3001/persons").then((response) => {
+      console.log("promise fulfilled");
+      setPersons(response.data);
+    });
+  }, []);
 
   const handleFilter = (event) => {
-    console.log(event.target.value)
-    setFilter(event.target.value)
-  }
+    console.log(event.target.value);
+    setFilter(event.target.value);
+  };
 
-  const addPerson = (event) =>{
-    event.preventDefault()
-    const personObject={
+  const addPerson = (event) => {
+    event.preventDefault();
+    const personObject = {
       name: newName,
-      number: newNumber
+      number: newNumber,
+    };
+    if (
+      persons.some((person) => person.name === newName) ||
+      persons.some((person) => person.number === newNumber)
+    ) {
+      alert(`${newName} is already added to phonebook`);
+    } else if (newName === "") {
+      alert("Name cannot be empty");
+    } else if (newNumber === "") {
+      alert("Number cannot be empty");
+    } else {
+      setPersons(persons.concat(personObject));
+      setNewName("");
+      setNewNumber("");
     }
-    if (persons.some(person => person.name === newName) || persons.some(person => person.number === newNumber)) {
-      alert(`${newName} is already added to phonebook`)
-    }else if (newName === '') {
-      alert('Name cannot be empty')
-    }else if (newNumber === '') {
-      alert('Number cannot be empty')
-    }else{
-      setPersons(persons.concat(personObject))
-      setNewName('')
-      setNewNumber('')
-    }
-  }
+  };
 
-  const handleNewName = (event) =>{
-    console.log(event.target.value)
-    setNewName(event.target.value)
-  }
+  const handleNewName = (event) => {
+    console.log(event.target.value);
+    setNewName(event.target.value);
+  };
 
   const handleNewNumber = (event) => {
-    console.log(event.target.value)
-    setNewNumber(event.target.value)
-  }
+    console.log(event.target.value);
+    setNewNumber(event.target.value);
+  };
 
   return (
     <div>
@@ -104,7 +117,7 @@ const App = () => {
       <h2>Numbers</h2>
       <Persons persons={persons} filter={filter} />
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
