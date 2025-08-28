@@ -80,6 +80,15 @@ const App = () => {
       });
   };
 
+  const changeNumber = (newObject) => {
+    const id = persons.find((person) => person.name === newName).id;
+    phoneService.changeNumber(id, newObject).then((returnedPerson) => {
+      setPersons(
+        persons.map((person) => (person.id === id ? returnedPerson : person))
+      );
+    });
+  };
+
   const addPerson = (event) => {
     event.preventDefault();
     const personObject = {
@@ -90,7 +99,10 @@ const App = () => {
       persons.some((person) => person.name === newName) ||
       persons.some((person) => person.number === newNumber)
     ) {
-      alert(`${newName} is already added to phonebook`);
+      window.confirm(
+        `${newName} is already added to phonebook, replace the old number with a new one?`
+      ) && changeNumber(personObject);
+      console.log("number updated");
     } else if (newName === "") {
       alert("Name cannot be empty");
     } else if (newNumber === "") {
