@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import phoneService from "./services/phonebook";
 
 const Filter = ({ filter, handleFilter }) => {
   return (
@@ -35,7 +36,7 @@ const PersonForm = ({
   );
 };
 
-const Persons = ({ persons, filter }) => {
+const Persons = ({ persons, filter, handleDelete }) => {
   if (filter !== "") {
     persons = persons.filter((person) =>
       person.name.toLowerCase().includes(filter.toLowerCase())
@@ -47,6 +48,7 @@ const Persons = ({ persons, filter }) => {
       {persons.map((person) => (
         <li key={person.name}>
           {person.name} {person.number}
+          <button onClick={() => handleDelete(person.id)}>delete</button>
         </li>
       ))}
     </ul>
@@ -60,15 +62,22 @@ const App = () => {
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    axios.get("http://localhost:3001/persons").then((response) => {
-      console.log("promise fulfilled");
-      setPersons(response.data);
+    phoneService.getNumbers().then((initialNumbers) => {
+      setPersons(initialNumbers);
     });
   }, []);
 
   const handleFilter = (event) => {
     console.log(event.target.value);
     setFilter(event.target.value);
+  };
+
+  const handleDelete = (id) => {
+    window.confirm("Delete this person?") &&
+      phoneService.deleteNumber(id).then(() => {
+        setPersons(persons.filter((person) => person.id !== id));
+        console.log("deleted person: " + id);
+      });
   };
 
   const addPerson = (event) => {
@@ -87,9 +96,11 @@ const App = () => {
     } else if (newNumber === "") {
       alert("Number cannot be empty");
     } else {
-      setPersons(persons.concat(personObject));
-      setNewName("");
-      setNewNumber("");
+      phoneService.addNumber(personObject).then((returnedPerson) => {
+        setPersons(persons.concat(returnedPerson));
+        setNewName("");
+        setNewNumber("");
+      });
     }
   };
 
@@ -115,7 +126,7 @@ const App = () => {
         addPerson={addPerson}
       />
       <h2>Numbers</h2>
-      <Persons persons={persons} filter={filter} />
+      <Persons persons={persons} filter={filter} handleDelete={handleDelete} />
     </div>
   );
 };
