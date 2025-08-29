@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import phoneService from "./services/phonebook";
+import "./App.css";
+
+const Notification = ({ message }) => {
+  if (message === null) {
+    return null;
+  }
+
+  return <div className="notification">{message}</div>;
+};
 
 const Filter = ({ filter, handleFilter }) => {
   return (
@@ -60,6 +69,7 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filter, setFilter] = useState("");
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     phoneService.getNumbers().then((initialNumbers) => {
@@ -109,6 +119,10 @@ const App = () => {
       alert("Number cannot be empty");
     } else {
       phoneService.addNumber(personObject).then((returnedPerson) => {
+        setNotification(`Added ${returnedPerson.name}`);
+        setTimeout(() => {
+          setNotification(null);
+        }, 5000);
         setPersons(persons.concat(returnedPerson));
         setNewName("");
         setNewNumber("");
@@ -128,6 +142,7 @@ const App = () => {
 
   return (
     <div>
+      <Notification message={notification} />
       <h2>Phonebook</h2>
       <Filter filter={filter} handleFilter={handleFilter} />
       <PersonForm
