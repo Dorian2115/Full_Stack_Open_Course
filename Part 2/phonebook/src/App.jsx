@@ -11,6 +11,14 @@ const Notification = ({ message }) => {
   return <div className="notification">{message}</div>;
 };
 
+const ErrorMessage = ({ message }) => {
+  if (message === null) {
+    return null;
+  }
+
+  return <div className="error">{message}</div>;
+};
+
 const Filter = ({ filter, handleFilter }) => {
   return (
     <div>
@@ -70,6 +78,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState("");
   const [filter, setFilter] = useState("");
   const [notification, setNotification] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
     phoneService.getNumbers().then((initialNumbers) => {
@@ -85,6 +94,10 @@ const App = () => {
   const handleDelete = (id) => {
     window.confirm("Delete this person?") &&
       phoneService.deleteNumber(id).then(() => {
+        setNotification(`${persons.find((p) => p.id === id).name} deleted`);
+        setTimeout(() => {
+          setNotification(null);
+        }, 5000);
         setPersons(persons.filter((person) => person.id !== id));
         console.log("deleted person: " + id);
       });
@@ -92,11 +105,21 @@ const App = () => {
 
   const changeNumber = (newObject) => {
     const id = persons.find((person) => person.name === newName).id;
-    phoneService.changeNumber(id, newObject).then((returnedPerson) => {
-      setPersons(
-        persons.map((person) => (person.id === id ? returnedPerson : person))
-      );
-    });
+    phoneService
+      .changeNumber(id, newObject)
+      .then((returnedPerson) => {
+        setPersons(
+          persons.map((person) => (person.id === id ? returnedPerson : person))
+        );
+      })
+      .catch(() => {
+        setErrorMessage(
+          `Information of ${newName} has already been removed from the server`
+        );
+        setTimeout(() => {
+          setNotification(null);
+        }, 5000);
+      });
   };
 
   const addPerson = (event) => {
@@ -143,6 +166,7 @@ const App = () => {
   return (
     <div>
       <Notification message={notification} />
+      <ErrorMessage message={errorMessage} />
       <h2>Phonebook</h2>
       <Filter filter={filter} handleFilter={handleFilter} />
       <PersonForm
