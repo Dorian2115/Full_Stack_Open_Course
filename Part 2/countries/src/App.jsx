@@ -1,6 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import axios from "axios";
 import countryService from "./services/countries";
+import weatherService from "./services/weather";
+
+const baseIconUrl = "https://openweathermap.org/img/wn";
 
 const Filter = ({ filter, handleFilter }) => {
   return (
@@ -11,12 +14,21 @@ const Filter = ({ filter, handleFilter }) => {
 };
 
 const CountryCard = ({ country }) => {
+  const [weatherData, setWeatherData] = useState(null);
+
+  useEffect(() => {
+    weatherService.weatherReport({ city: country.capital }).then((data) => {
+      setWeatherData(data);
+    });
+  }, [country.capital]);
+
+  const iconUrl = `${baseIconUrl}/${weatherData?.weather[0]?.icon}@2x.png`;
   return (
     <div>
       <h2>{country.name.common}</h2>
       <p>Capital: {country.capital}</p>
       <p>Area: {country.area} km²</p>
-      <p>Languages:</p>
+      <h3>Languages:</h3>
       <ul>
         {Object.values(country.languages).map((language) => (
           <li key={language}>{language}</li>
@@ -29,6 +41,12 @@ const CountryCard = ({ country }) => {
           style={{ border: "1px solid black" }}
         />
       </p>
+      <h3>Weather in {country.capital}</h3>
+      <p>Temperature: {(weatherData?.main?.temp - 273.15).toFixed(1)} °C</p>
+      <p>
+        <img src={iconUrl} alt={`Weather icon for ${country.capital}`} />
+      </p>
+      <p>Wind: {weatherData?.wind?.speed} m/s</p>
     </div>
   );
 };
@@ -40,7 +58,7 @@ const CountryContainer = ({ countries, filter, handleShow }) => {
 
   if (filteredCountries.length === 1) {
     console.log(
-      "Displaying information for:" + filteredCountries[0].name.common
+      "Displaying information for: " + filteredCountries[0].name.common
     );
     return <CountryCard country={filteredCountries[0]} />;
   } else if (filteredCountries.length > 10) {
