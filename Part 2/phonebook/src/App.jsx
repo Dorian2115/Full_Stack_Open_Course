@@ -86,11 +86,6 @@ const App = () => {
     });
   }, []);
 
-  const handleFilter = (event) => {
-    console.log(event.target.value);
-    setFilter(event.target.value);
-  };
-
   const handleDelete = (id) => {
     window.confirm("Delete this person?") &&
       phoneService.deleteNumber(id).then(() => {
