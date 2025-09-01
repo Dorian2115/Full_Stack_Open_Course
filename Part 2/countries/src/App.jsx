@@ -33,7 +33,7 @@ const CountryCard = ({ country }) => {
   );
 };
 
-const CountryContainer = ({ countries, filter }) => {
+const CountryContainer = ({ countries, filter, handleShow }) => {
   const filteredCountries = countries.filter((country) =>
     country.name.common.toLowerCase().includes(filter.toLowerCase())
   );
@@ -49,7 +49,10 @@ const CountryContainer = ({ countries, filter }) => {
   return (
     <ul>
       {filteredCountries.map((country) => (
-        <li key={country.cca2}>{country.name.common}</li>
+        <li key={country.cca2}>
+          {country.name.common}{" "}
+          <button onClick={handleShow(country)}>Show</button>
+        </li>
       ))}
     </ul>
   );
@@ -70,10 +73,20 @@ const App = () => {
     setFilter(event.target.value);
   };
 
+  const handleShow = (country) => () => {
+    console.log("Showing details for:", country.name.common);
+    setFilter(country.name.common);
+  };
+
   return (
     <div>
       <Filter filter={filter} handleFilter={handleFilter} />
-      <CountryContainer countries={countries} filter={filter} />
+      <CountryContainer
+        id="countryContainer"
+        countries={countries}
+        filter={filter}
+        handleShow={handleShow}
+      />
     </div>
   );
 };
