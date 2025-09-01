@@ -82,7 +82,6 @@ const App = () => {
     <div>
       <Filter filter={filter} handleFilter={handleFilter} />
       <CountryContainer
-        id="countryContainer"
         countries={countries}
         filter={filter}
         handleShow={handleShow}
