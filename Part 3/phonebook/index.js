@@ -23,7 +23,12 @@ let persons = [
   },
 ];
 
+const idGenerator = () => {
+  return Math.floor(Math.random() * 1000000000).toString();
+};
+
 const app = express();
+app.use(express.json());
 
 app.get("/", (request, response) => {
   response.send("<h1>Welcome to the persons API</h1>");
@@ -57,6 +62,23 @@ app.delete("/api/persons/:id", (request, response) => {
   persons = persons.filter((person) => id !== person.id);
 
   response.status(204).end();
+});
+
+app.post("/api/persons", (request, response) => {
+  const body = request.body;
+
+  if (!body) {
+    return response.status(400).json({ error: "content missing" });
+  }
+
+  const person = {
+    id: idGenerator(),
+    name: body.name,
+    number: body.number,
+  };
+
+  persons = persons.concat(person);
+  response.json(person);
 });
 
 const PORT = 3001;
