@@ -1,6 +1,6 @@
 const express = require("express");
 
-let phonebook = [
+let persons = [
   {
     id: "1",
     name: "Arto Hellas",
@@ -26,19 +26,30 @@ let phonebook = [
 const app = express();
 
 app.get("/", (request, response) => {
-  response.send("<h1>Welcome to the Phonebook API</h1>");
+  response.send("<h1>Welcome to the persons API</h1>");
 });
 
-app.get("/api/phonebook", (request, response) => {
-  response.json(phonebook);
+app.get("/api/persons", (request, response) => {
+  response.json(persons);
 });
 
 app.get("/info", (request, response) => {
   response.send(
-    `<div><p>Phonebook has information for ${
-      phonebook.length
+    `<div><p>persons has information for ${
+      persons.length
     } people</p><p>${new Date()}</p></div>`
   );
+});
+
+app.get("/api/persons/:id", (request, response) => {
+  const id = request.params.id;
+  const person = persons.find((person) => id === person.id);
+
+  if (person) {
+    response.json(person);
+  } else {
+    response.status(404).send({ error: "Person not found" });
+  }
 });
 
 const PORT = 3001;
