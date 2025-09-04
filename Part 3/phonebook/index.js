@@ -30,7 +30,13 @@ const idGenerator = () => {
 
 const app = express();
 app.use(express.json());
-app.use(morgan("tiny"));
+
+morgan.token("body", (request) => {
+  return request.body ? JSON.stringify(request.body) : "";
+});
+app.use(
+  morgan(":method :url :status :res[content-length] - :response-time ms :body")
+);
 
 app.get("/", (request, response) => {
   response.send("<h1>Welcome to the persons API</h1>");
