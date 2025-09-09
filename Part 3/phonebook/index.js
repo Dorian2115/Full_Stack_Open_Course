@@ -30,6 +30,7 @@ const idGenerator = () => {
 
 const app = express();
 app.use(express.json());
+app.use(express.static("dist"));
 
 morgan.token("body", (request) => {
   return request.body ? JSON.stringify(request.body) : "";
@@ -39,7 +40,7 @@ app.use(
 );
 
 app.get("/", (request, response) => {
-  response.send("<h1>Welcome to the persons API</h1>");
+  response.send(staticFiles + "index.html");
 });
 
 app.get("/api/persons", (request, response) => {
@@ -93,7 +94,7 @@ app.post("/api/persons", (request, response) => {
   response.json(person);
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

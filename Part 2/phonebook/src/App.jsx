@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import phoneService from "./services/phonebook";
 import "./App.css";
 
@@ -156,6 +155,11 @@ const App = () => {
   const handleNewNumber = (event) => {
     console.log(event.target.value);
     setNewNumber(event.target.value);
+  };
+
+  const handleFilter = (event) => {
+    console.log(event.target.value);
+    setFilter(event.target.value);
   };
 
   return (
