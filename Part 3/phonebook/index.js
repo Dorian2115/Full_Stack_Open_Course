@@ -33,11 +33,12 @@ app.get("/api/persons", (request, response) => {
 });
 
 app.get("/info", (request, response) => {
-  response.send(
-    `<div><p>persons has information for ${
-      Person.length
-    } people</p><p>${new Date()}</p></div>`
-  );
+  Person.countDocuments({}).then((count) => {
+    const date = new Date();
+    response.send(
+      `<p>Phonebook has info for ${count} people</p><p>${date}</p>`
+    );
+  });
 });
 
 app.get("/api/persons/:id", (request, response) => {
