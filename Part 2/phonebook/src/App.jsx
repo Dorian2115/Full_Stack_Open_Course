@@ -122,10 +122,7 @@ const App = () => {
       name: newName,
       number: newNumber,
     };
-    if (
-      persons.some((person) => person.name === newName) ||
-      persons.some((person) => person.number === newNumber)
-    ) {
+    if (persons.some((person) => person.name === newName)) {
       window.confirm(
         `${newName} is already added to phonebook, replace the old number with a new one?`
       ) && changeNumber(personObject);
@@ -135,15 +132,24 @@ const App = () => {
     } else if (newNumber === "") {
       alert("Number cannot be empty");
     } else {
-      phoneService.addNumber(personObject).then((returnedPerson) => {
-        setNotification(`Added ${returnedPerson.name}`);
-        setTimeout(() => {
-          setNotification(null);
-        }, 5000);
-        setPersons(persons.concat(returnedPerson));
-        setNewName("");
-        setNewNumber("");
-      });
+      phoneService
+        .addNumber(personObject)
+        .then((returnedPerson) => {
+          setNotification(`Added ${returnedPerson.name}`);
+          setTimeout(() => {
+            setNotification(null);
+          }, 5000);
+          setPersons(persons.concat(returnedPerson));
+          setNewName("");
+          setNewNumber("");
+        })
+        .catch((error) => {
+          console.log(error.response.data.error);
+          setErrorMessage(error.response.data.error);
+          setTimeout(() => {
+            setErrorMessage(null);
+          }, 5000);
+        });
     }
   };
 
