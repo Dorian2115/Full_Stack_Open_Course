@@ -20,6 +20,8 @@ const favoriteBlog = (blogs) => {
   return favorite;
 };
 
+//4.6 i 4.7 do zrobienia po zakończeniu tej części kursu
+
 module.exports = {
   dummy,
   totalLikes,
