@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const config = require("./utils/config");
 const logger = require("./utils/logger");
 const blogsRouter = require("./controllers/blogs");
-const Blog = require("./models/blog");
 
 const app = express();
 

@@ -1,4 +1,4 @@
-const { test, after, beforeEach, describe } = require("node:test");
+const { test, after, beforeEach, describe, before } = require("node:test");
 const assert = require("node:assert");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
@@ -8,14 +8,12 @@ const Blog = require("../models/blog");
 
 const api = supertest(app);
 
-beforeEach(async () => {
-  await Blog.deleteMany({});
-  let blogObjects = initialBlogs.map((blog) => new Blog(blog));
-  const promiseArray = blogObjects.map((blog) => blog.save());
-  await Promise.all(promiseArray);
-});
-
 describe("when there are some blogs saved", () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({});
+    await Blog.insertMany(initialBlogs);
+  });
+
   test("blogs are returned as json", async () => {
     await api
       .get("/api/blogs")
@@ -79,6 +77,47 @@ describe("addition of a new blog", () => {
 
     const response = await api.post("/api/blogs").send(newBlog).expect(400);
     assert.strictEqual(response.body.error, "title or url missing");
+  });
+});
+
+describe("deletion of a blog", () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({});
+    await Blog.insertMany(initialBlogs);
+  });
+
+  test("succeeds with status code 204 if id is valid", async () => {
+    const blogsAtStart = await notesInDb();
+    const blogToDelete = blogsAtStart[0];
+    console.log(blogToDelete.id);
+
+    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+
+    const blogsAtEnd = await notesInDb();
+    const titles = blogsAtEnd.map((r) => r.title);
+    assert(!titles.includes(blogToDelete.title));
+    assert.strictEqual(blogsAtEnd.length, initialBlogs.length - 1);
+  });
+});
+
+describe("updating a blog", () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({});
+    await Blog.insertMany(initialBlogs);
+  });
+
+  test("succeeds in updating the likes of a blog", async () => {
+    const blogsAtStart = await notesInDb();
+    const blogToUpdate = blogsAtStart[0];
+
+    const updatedBlogData = { ...blogToUpdate, likes: blogToUpdate.likes + 1 };
+
+    const response = await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(updatedBlogData)
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+    assert.strictEqual(response.body.likes, blogToUpdate.likes + 1);
   });
 });
 
