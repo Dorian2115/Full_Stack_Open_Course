@@ -37,7 +37,7 @@ describe("when there are some blogs saved", () => {
     });
   });
 
-  test.only("a valid blog can be added", async () => {
+  test("a valid blog can be added", async () => {
     const newBlog = {
       title: "New blog",
       author: "New author",
@@ -56,6 +56,17 @@ describe("when there are some blogs saved", () => {
 
     const titles = blogsAtEnd.map((b) => b.title);
     assert.ok(titles.includes("New blog"));
+  });
+
+  test("defaults likes to 0 if missing", async () => {
+    const newBlog = {
+      title: "Blog without likes",
+      author: "Author",
+      url: "http://blogwithoutlikes.com",
+    };
+
+    const response = await api.post("/api/blogs").send(newBlog).expect(201);
+    assert.strictEqual(response.body.likes, 0);
   });
 });
 
