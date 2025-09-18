@@ -5,7 +5,6 @@ const supertest = require("supertest");
 const app = require("../app");
 const { initialBlogs, notesInDb } = require("./test_helper");
 const Blog = require("../models/blog");
-const { DESTRUCTION } = require("node:dns");
 
 const api = supertest(app);
 
@@ -28,6 +27,14 @@ describe("when there are some blogs saved", () => {
     const response = await api.get("/api/blogs");
 
     assert.strictEqual(response.body.length, initialBlogs.length);
+  });
+
+  test.only("identifier property of the blog posts is named id", async () => {
+    const response = await api.get("/api/blogs");
+    const blogs = response.body;
+    blogs.forEach((blog) => {
+      assert.ok(blog.id);
+    });
   });
 });
 
