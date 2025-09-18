@@ -29,12 +29,33 @@ describe("when there are some blogs saved", () => {
     assert.strictEqual(response.body.length, initialBlogs.length);
   });
 
-  test.only("identifier property of the blog posts is named id", async () => {
+  test("identifier property of the blog posts is named id", async () => {
     const response = await api.get("/api/blogs");
     const blogs = response.body;
     blogs.forEach((blog) => {
       assert.ok(blog.id);
     });
+  });
+
+  test.only("a valid blog can be added", async () => {
+    const newBlog = {
+      title: "New blog",
+      author: "New author",
+      url: "http://newblog.com",
+      likes: 5,
+    };
+
+    await api
+      .post("/api/blogs")
+      .send(newBlog)
+      .expect(201)
+      .expect("Content-Type", /application\/json/);
+
+    const blogsAtEnd = await notesInDb();
+    assert.strictEqual(blogsAtEnd.length, initialBlogs.length + 1);
+
+    const titles = blogsAtEnd.map((b) => b.title);
+    assert.ok(titles.includes("New blog"));
   });
 });
 
