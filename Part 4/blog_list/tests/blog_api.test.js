@@ -36,7 +36,9 @@ describe("when there are some blogs saved", () => {
       assert.ok(blog.id);
     });
   });
+});
 
+describe("addition of a new blog", () => {
   test("a valid blog can be added", async () => {
     const newBlog = {
       title: "New blog",
@@ -67,6 +69,16 @@ describe("when there are some blogs saved", () => {
 
     const response = await api.post("/api/blogs").send(newBlog).expect(201);
     assert.strictEqual(response.body.likes, 0);
+  });
+
+  test("blog without title and url returns status code 400", async () => {
+    const newBlog = {
+      author: "No title and url",
+      likes: 3,
+    };
+
+    const response = await api.post("/api/blogs").send(newBlog).expect(400);
+    assert.strictEqual(response.body.error, "title or url missing");
   });
 });
 
