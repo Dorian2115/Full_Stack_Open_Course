@@ -18,6 +18,6 @@ mongoose
   });
 
 app.use(express.json());
-app.use("/api/blogs", blogsRouter);
+app.use("/api", blogsRouter);
 
 module.exports = app;

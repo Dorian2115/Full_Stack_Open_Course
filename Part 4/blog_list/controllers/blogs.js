@@ -1,12 +1,14 @@
 const blogsRouter = require("express").Router();
+const bcrypt = require("bcrypt");
 const Blog = require("../models/blog");
+const User = require("../models/user");
 
-blogsRouter.get("/", async (request, response) => {
+blogsRouter.get("/blogs", async (request, response) => {
   const responseBlogs = await Blog.find({});
   response.json(responseBlogs);
 });
 
-blogsRouter.post("/", async (request, response) => {
+blogsRouter.post("/blogs", async (request, response) => {
   const body = request.body;
 
   if (!body.title || !body.url) {
@@ -24,13 +26,32 @@ blogsRouter.post("/", async (request, response) => {
   response.status(201).json(uploadedBlog);
 });
 
-blogsRouter.delete("/:id", async (request, response) => {
+blogsRouter.post("/users", async (request, response) => {
+  const body = request.body;
+
+  const user = new User({
+    username: body.username,
+    name: body.name,
+    passwordHash: await bcrypt.hash(body.password, 10),
+  });
+
+  user.save().then((savedUser) => {
+    response.status(201).json(savedUser);
+  });
+});
+
+blogsRouter.get("/users", async (request, response) => {
+  const users = await User.find({});
+  response.json(users);
+});
+
+blogsRouter.delete("/blogs/:id", async (request, response) => {
   //findByIdAndRemove is deprecated - use findByIdAndDelete instead !!!!!!!!!!!!
   await Blog.findByIdAndDelete(request.params.id);
   response.status(204).end();
 });
 
-blogsRouter.put("/:id", async (request, response) => {
+blogsRouter.put("/blogs/:id", async (request, response) => {
   const body = request.body;
   const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, body, {
     new: true,
