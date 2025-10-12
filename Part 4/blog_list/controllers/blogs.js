@@ -8,6 +8,15 @@ blogsRouter.get("/blogs", async (request, response) => {
   response.json(responseBlogs);
 });
 
+blogsRouter.get("/blogs/:id", async (request, response) => {
+  const blog = await Blog.findById(request.params.id);
+  if (blog) {
+    response.json(blog);
+  } else {
+    response.status(404).end();
+  }
+});
+
 blogsRouter.post("/blogs", async (request, response) => {
   const body = request.body;
 
@@ -29,6 +38,8 @@ blogsRouter.post("/blogs", async (request, response) => {
 blogsRouter.post("/users", async (request, response) => {
   const body = request.body;
 
+  console.log(body);
+
   const user = new User({
     username: body.username,
     name: body.name,
@@ -43,6 +54,15 @@ blogsRouter.post("/users", async (request, response) => {
 blogsRouter.get("/users", async (request, response) => {
   const users = await User.find({});
   response.json(users);
+});
+
+blogsRouter.get("/users/:id", async (request, response) => {
+  const user = await User.findById(request.params.id);
+  if (user) {
+    response.json(user);
+  } else {
+    response.status(404).end();
+  }
 });
 
 blogsRouter.delete("/blogs/:id", async (request, response) => {
