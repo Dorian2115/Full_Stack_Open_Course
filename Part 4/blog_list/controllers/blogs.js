@@ -38,7 +38,22 @@ blogsRouter.post("/blogs", async (request, response) => {
 blogsRouter.post("/users", async (request, response) => {
   const body = request.body;
 
-  console.log(body);
+  if (!body.password || body.password.length < 3) {
+    return response.status(400).json({
+      error: "password is required and must be at least 3 characters long",
+    });
+  }
+
+  if (!body.username || body.username.length < 3) {
+    return response.status(400).json({
+      error: "username is required and must be at least 3 characters long",
+    });
+  }
+
+  const existingUser = await User.findOne({ username: body.username });
+  if (existingUser) {
+    return response.status(400).json({ error: "username must be unique" });
+  }
 
   const user = new User({
     username: body.username,
@@ -58,6 +73,15 @@ blogsRouter.get("/users", async (request, response) => {
 
 blogsRouter.get("/users/:id", async (request, response) => {
   const user = await User.findById(request.params.id);
+  if (user) {
+    response.json(user);
+  } else {
+    response.status(404).end();
+  }
+});
+
+blogsRouter.delete("/users/:id", async (request, response) => {
+  const user = await User.findByIdAndDelete(request.params.id);
   if (user) {
     response.json(user);
   } else {
