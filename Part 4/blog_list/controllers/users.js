@@ -17,24 +17,18 @@ usersRouter.post("/", async (request, response) => {
     });
   }
 
-  const existingUser = await User.findOne({ username: body.username });
-  if (existingUser) {
-    return response.status(400).json({ error: "username must be unique" });
-  }
-
   const user = new User({
     username: body.username,
     name: body.name,
     passwordHash: await bcrypt.hash(body.password, 10),
   });
 
-  user.save().then((savedUser) => {
-    response.status(201).json(savedUser);
-  });
+  const savedUser = await user.save();
+  response.status(201).json(savedUser);
 });
 
 usersRouter.get("/", async (request, response) => {
-  const users = await User.find({});
+  const users = await User.find({}).populate("blogs");
   response.json(users);
 });
 
