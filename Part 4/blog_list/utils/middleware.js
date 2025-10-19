@@ -1,3 +1,7 @@
+const jwt = require("jsonwebtoken");
+const User = require("../models/user");
+const { error } = require("./logger");
+
 const errorHandler = (error, request, response, next) => {
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
@@ -25,7 +29,24 @@ const tokenExtractor = (request, response, next) => {
   next();
 };
 
+const userExtractor = async (request, response, next) => {
+  const token = request.token;
+  if (!token) {
+    request.user = null;
+    return next();
+  }
+  const decodedToken = jwt.verify(request.token, process.env.SECRET);
+  const user = await User.findById(decodedToken.id);
+  if (user) {
+    request.user = user;
+  } else {
+    request.user = null;
+  }
+  next();
+};
+
 module.exports = {
   errorHandler,
   tokenExtractor,
+  userExtractor,
 };
