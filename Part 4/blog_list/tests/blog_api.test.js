@@ -3,8 +3,15 @@ const assert = require("node:assert");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app");
-const { initialBlogs, notesInDb } = require("./test_helper");
+const {
+  initialBlogs,
+  notesInDb,
+  usersInDb,
+  getValidToken,
+} = require("./test_helper");
 const Blog = require("../models/blog");
+const jwt = require("jsonwebtoken");
+const User = require("../models/user");
 
 const api = supertest(app);
 
@@ -37,7 +44,36 @@ describe("when there are some blogs saved", () => {
 });
 
 describe("addition of a new blog", () => {
-  test("a valid blog can be added", async () => {
+  let token = null;
+  let user = null;
+
+  beforeEach(async () => {
+    await Blog.deleteMany({});
+    await User.deleteMany({});
+
+    token = await getValidToken();
+    const decodedToken = jwt.verify(token, process.env.SECRET);
+    user = await User.findById(decodedToken.id);
+
+    const blogWithUser = initialBlogs.map((blog) => ({
+      ...blog,
+      user: user._id,
+    }));
+    await Blog.insertMany(blogWithUser);
+  });
+
+  test("fails with status code 401 if token is not provided", async () => {
+    const newBlog = {
+      title: "New blog without token",
+      author: "Author",
+      url: "http://newblogwithouttoken.com",
+      likes: 2,
+    };
+
+    await api.post("/api/blogs").send(newBlog).expect(401);
+  });
+
+  test("a valid blog can be added with valid token included", async () => {
     const newBlog = {
       title: "New blog",
       author: "New author",
@@ -47,6 +83,7 @@ describe("addition of a new blog", () => {
 
     await api
       .post("/api/blogs")
+      .set("Authorization", `Bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect("Content-Type", /application\/json/);
@@ -65,7 +102,11 @@ describe("addition of a new blog", () => {
       url: "http://blogwithoutlikes.com",
     };
 
-    const response = await api.post("/api/blogs").send(newBlog).expect(201);
+    const response = await api
+      .post("/api/blogs")
+      .set("Authorization", `Bearer ${token}`)
+      .send(newBlog)
+      .expect(201);
     assert.strictEqual(response.body.likes, 0);
   });
 
@@ -75,15 +116,39 @@ describe("addition of a new blog", () => {
       likes: 3,
     };
 
-    const response = await api.post("/api/blogs").send(newBlog).expect(400);
+    const response = await api
+      .post("/api/blogs")
+      .set("Authorization", `Bearer ${token}`)
+      .send(newBlog)
+      .expect(400);
     assert.strictEqual(response.body.error, "title or url missing");
   });
 });
 
 describe("deletion of a blog", () => {
+  let token = null;
+  let user = null;
+
   beforeEach(async () => {
     await Blog.deleteMany({});
-    await Blog.insertMany(initialBlogs);
+    await User.deleteMany({});
+
+    token = await getValidToken();
+    const decodedToken = jwt.verify(token, process.env.SECRET);
+    user = await User.findById(decodedToken.id);
+
+    const blogWithUser = initialBlogs.map((blog) => ({
+      ...blog,
+      user: user._id,
+    }));
+    await Blog.insertMany(blogWithUser);
+  });
+
+  test("fails with status code 401 if token is not provided", async () => {
+    const blogsAtStart = await notesInDb();
+    const blogToDelete = blogsAtStart[0];
+
+    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(401);
   });
 
   test("succeeds with status code 204 if id is valid", async () => {
@@ -91,7 +156,10 @@ describe("deletion of a blog", () => {
     const blogToDelete = blogsAtStart[0];
     console.log(blogToDelete.id);
 
-    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(204);
 
     const blogsAtEnd = await notesInDb();
     const titles = blogsAtEnd.map((r) => r.title);
